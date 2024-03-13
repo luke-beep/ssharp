@@ -32,6 +32,14 @@ public class SshService(
             case "Create new host":
                 var ssh = await CreateNewSshAsync();
                 await hostService.SaveHostAsync(ssh);
+                await notificationService.SendAsync(new Notification
+                                   (
+                                       "Success",
+                                                          "Host created successfully",
+                                                                             null,
+                                                                                                LoggingSeverity.Information,
+                                                                                                                   null
+                                                                                                                                  ));
                 return null;
             default:
                 var selectedHost = hosts.Find(h => h.Ip == selection);
@@ -46,6 +54,14 @@ public class SshService(
                     var privateKey = new PrivateKeyFile(selectedHost?.PrivateKey, await encryptionService.DecryptAsync(selectedHost.Passphrase));
                     client = new SshClient(selectedHost.Ip, selectedHost.Port, selectedHost.Username, privateKey);
                 }
+                await notificationService.SendAsync(new Notification
+                                   (
+                                       "Connecting",
+                                                          $"Connecting to {selectedHost.Ip}",
+                                                                             null,
+                                                                                                LoggingSeverity.Information,
+                                                                                                                   null
+                                                                                                                                  ));
 
                 return client;
         }
@@ -122,6 +138,5 @@ public class SshService(
             Username = username,
             Password = encryptedPassword
         };
-
     }
 }

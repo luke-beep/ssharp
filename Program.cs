@@ -4,6 +4,7 @@ using Renci.SshNet.Common;
 using Spectre.Console;
 using ssharp.Contracts.Services;
 using ssharp.Enums;
+using ssharp.Models;
 using ssharp.Services;
 
 namespace ssharp;
@@ -22,19 +23,24 @@ internal class Program
         IEncryptionService encryptionService = new EncryptionService();
         ISshService sshService = new SshService(fileService, notificationService, settingsService, hostService,
             encryptionService);
-
+                
         AppDomain.CurrentDomain.UnhandledException += (sender, eventArgs) =>
             ExceptionHandler((Exception)eventArgs.ExceptionObject, loggingService);
 
+        await notificationService.SendAsync(new Notification
+        (
+            "Welcome to SSHarp",
+            "A simple SSH client written in C#",
+            null,
+            LoggingSeverity.Information,
+            null
+        ));
         await Connection(sshService);
     }
 
     private static async Task Connection(ISshService sshService)
     {
-        var text = new FigletText("ssharper");
-        text.Justification = Justify.Center;
         AnsiConsole.Clear();
-        AnsiConsole.Write(text);
         var client = await sshService.InitializeAsync();
         
 
