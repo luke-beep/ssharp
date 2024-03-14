@@ -1,5 +1,5 @@
-﻿using ssharp.Contracts.Services;
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json.Linq;
+using ssharp.Contracts.Services;
 using ssharp.Helpers;
 using ssharp.Models;
 
@@ -10,17 +10,19 @@ public class HostService : IHostService
     private const string DefaultApplicationDataFolder = "ssharp";
     private const string DefaultLocalHostsFile = "hosts.json";
 
+    private readonly string _applicationDataFolder;
+
     private readonly IFileService _fileService;
 
     private readonly string _localApplicationData =
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
 
-    private readonly string _applicationDataFolder;
     private readonly string _localhostsFile;
+
+    private bool _isInitialized;
 
     private IDictionary<string, object> _settings;
 
-    private bool _isInitialized;
     public HostService(IFileService fileService)
     {
         _fileService = fileService;
@@ -28,19 +30,6 @@ public class HostService : IHostService
         _applicationDataFolder = Path.Combine(_localApplicationData, DefaultApplicationDataFolder);
         _localhostsFile = DefaultLocalHostsFile;
         _settings = new Dictionary<string, object>();
-    }
-
-    private async Task InitializeAsync()
-    {
-        if (!_isInitialized)
-        {
-            _settings = await Task.Run(() =>
-                            _fileService.Read<IDictionary<string, object>>(_applicationDataFolder,
-                                _localhostsFile)) ??
-                        new Dictionary<string, object>();
-
-            _isInitialized = true;
-        }
     }
 
     public async Task<List<Ssh>> GetAllHostsAsync()
@@ -67,6 +56,7 @@ public class HostService : IHostService
             };
             hosts.Add(ssh);
         }
+
         return hosts;
     }
 
@@ -75,28 +65,39 @@ public class HostService : IHostService
         await InitializeAsync();
 
         if (_settings != null && _settings.TryGetValue(name, out var obj))
-        {
             return await Json.ToObjectAsync<T>((string)obj);
-        }
 
         return default;
     }
 
-    public async Task SaveHostAsync(Ssh ssh)
+    public async Task SaveHostAsync(Ssh? ssh)
     {
         await InitializeAsync();
 
         var obj = new Dictionary<string, object>
         {
-            {"port", ssh.Port.ToString()},
-            {"user", ssh.Username},
-            {"password", ssh.Password},
-            {"privateKey", ssh.PrivateKey},
-            {"passphrase", ssh.Passphrase}
+            { "port", ssh.Port.ToString() },
+            { "user", ssh.Username },
+            { "password", ssh.Password },
+            { "privateKey", ssh.PrivateKey },
+            { "passphrase", ssh.Passphrase }
         };
 
         _settings[ssh.Ip] = obj;
 
         await Task.Run(() => _fileService.Save(_applicationDataFolder, _localhostsFile, _settings));
+    }
+
+    private async Task InitializeAsync()
+    {
+        if (!_isInitialized)
+        {
+            _settings = await Task.Run(() =>
+                            _fileService.Read<IDictionary<string, object>>(_applicationDataFolder,
+                                _localhostsFile)) ??
+                        new Dictionary<string, object>();
+
+            _isInitialized = true;
+        }
     }
 }

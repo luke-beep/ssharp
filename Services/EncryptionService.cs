@@ -1,18 +1,18 @@
-﻿using ssharp.Contracts.Services;
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using System.Text;
+using ssharp.Contracts.Services;
 
 namespace ssharp.Services;
 
 public class EncryptionService : IEncryptionService
 {
+    private static readonly string Key = Environment.UserName;
+
     private readonly byte[] _iv =
     [
         0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
         0x09, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16
     ];
-
-    private static readonly string Key = Environment.UserName;
 
     public async Task<byte[]> EncryptAsync(string password)
     {
@@ -28,6 +28,7 @@ public class EncryptionService : IEncryptionService
 
         return output.ToArray();
     }
+
     public async Task<string> DecryptAsync(byte[] encrypted)
     {
         using var aes = Aes.Create();

@@ -22,7 +22,7 @@ public class NotificationService : INotificationService
 
     private static void RenderNotification(List<Text> rows)
     {
-        (var cy, var cx) = Console.GetCursorPosition();
+        var (cy, cx) = Console.GetCursorPosition();
         var i = 0;
         foreach (var row in rows)
         {
@@ -30,12 +30,13 @@ public class NotificationService : INotificationService
             i += 1;
             AnsiConsole.Write(row);
         }
+
         Console.SetCursorPosition(cx, cy);
     }
 
     private static void ClearNotification(List<Text> rows)
     {
-        (var cy, var cx) = Console.GetCursorPosition();
+        var (cy, cx) = Console.GetCursorPosition();
         var i = 0;
         foreach (var row in rows)
         {
@@ -43,6 +44,7 @@ public class NotificationService : INotificationService
             i += 1;
             AnsiConsole.Write(new string(' ', row.Length));
         }
+
         Console.SetCursorPosition(cx, cy);
     }
 }

@@ -6,5 +6,5 @@ public interface IHostService
 {
     Task<List<Ssh>> GetAllHostsAsync();
     Task<T> ReadHostAsync<T>(string key);
-    Task SaveHostAsync(Ssh ssh);
+    Task SaveHostAsync(Ssh? ssh);
 }

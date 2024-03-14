@@ -9,29 +9,16 @@ public class LoggingService : ILoggingService
 {
     private const string DefaultApplicationDataFolder = "ssharp\\Logs";
 
+    private readonly string _applicationDataFolder;
+
     private readonly string _localApplicationData =
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-
-    private readonly string _applicationDataFolder;
 
     private bool _isInitialized;
 
     public LoggingService()
     {
         _applicationDataFolder = Path.Combine(_localApplicationData, DefaultApplicationDataFolder);
-    }
-
-    private async Task InitializeAsync()
-    {
-        if (!_isInitialized)
-        {
-            if (!Directory.Exists(_applicationDataFolder))
-            {
-                Directory.CreateDirectory(_applicationDataFolder);
-            }
-
-            _isInitialized = true;
-        }
     }
 
     public async Task<bool> LogAsync(string message, LoggingSeverity severity, Exception? exception)
@@ -50,5 +37,15 @@ public class LoggingService : ILoggingService
         await writer.WriteLineAsync(await Json.StringifyAsync(log));
 
         return true;
+    }
+
+    private async Task InitializeAsync()
+    {
+        if (!_isInitialized)
+        {
+            if (!Directory.Exists(_applicationDataFolder)) Directory.CreateDirectory(_applicationDataFolder);
+
+            _isInitialized = true;
+        }
     }
 }
